@@ -1,0 +1,32 @@
+name: Inspect Element Properties
+
+on:
+  workflow_dispatch: # Läuft nur, wenn du manuell auf "Run workflow" klickst
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v4
+
+      - name: Alle Properties von Element 6 abfragen
+        env:
+          AUTH_HEADER: ${{ secrets.AUTH_HEADER }}
+        run: |
+          curl --request GET \
+            --url https://data-core.udp.senseering.io/api/elements/6 \
+            --header 'Accept: application/json' \
+            --header "Authorization: $AUTH_HEADER" \
+            --header 'Content-Type: application/json' \
+            --output all_properties.json
+
+      - name: Datei im Repository speichern
+        run: |
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git add all_properties.json
+          git commit -m "Update property structure list" || exit 0
+          git push
