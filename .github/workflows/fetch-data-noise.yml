@@ -15,6 +15,11 @@ jobs:
       - name: Repository auschecken
         uses: actions/checkout@v4
 
+      - name: Python einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
       - name: Lärmdaten von Senseering abfragen
         env:
           AUTH_HEADER: ${{ secrets.AUTH_HEADER }}
@@ -54,12 +59,45 @@ jobs:
             --header "Authorization: $AUTH_HEADER" \
             --header 'Content-Type: application/json' \
             --data @payload.json \
-            --output live_data.json
+            --output raw_data.json
+
+      - name: Daten in flaches JSON für OpenDataSoft umwandeln
+        run: |
+          python -c '
+          import json
+
+          # Zuordnung der Queries/Indizes zu ihren Property-IDs
+          property_ids = [141867, 141834, 141829, 143482]
+
+          with open("raw_data.json", "r") as f:
+              raw_data = json.load(f)
+
+          flat_data = []
+
+          for idx, item in enumerate(raw_data):
+              # Richtige Property-ID zuordnen
+              prop_id = property_ids[idx] if idx < len(property_ids) else None
+              
+              data_obj = item.get("data", {})
+              times = data_obj.get("time", [])
+              values = data_obj.get("value", [])
+
+              # Paare aus Timestamp und Messwert bilden
+              for t, v in zip(times, values):
+                  flat_data.append({
+                      "timestamp": t,
+                      "property_id": prop_id,
+                      "value": v
+                  })
+
+          with open("live_data.json", "w") as f:
+              json.dump(flat_data, f, indent=2)
+          '
 
       - name: Datei im Repository aktualisieren
         run: |
           git config user.name "GitHub Action"
           git config user.email "action@github.com"
           git add live_data.json
-          git commit -m "Auto-Update Lärmdaten" || exit 0
+          git commit -m "Auto-Update Lärmdaten (flaches Format)" || exit 0
           git push
