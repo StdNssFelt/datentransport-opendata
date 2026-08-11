@@ -27,7 +27,7 @@ jobs:
             --data '{
               "queries": [
                 {
-                  "source": { "property_id": "141866" }
+                  "source": { "property_id": 141866 }
                 }
               ]
             }' \
