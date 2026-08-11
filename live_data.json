@@ -1,1 +1,1 @@
-{"message":"Error processing request: controller.Controller.QueryElementData: element.QuerySource.UnmarshalJSON: json: cannot unmarshal string into Go struct field .property_id of type float64"}
+{"message":"Error processing request: controller.Controller.QueryElementData: element.Store.Query: selectPropIDQuery: error: unexpected property type node"}
