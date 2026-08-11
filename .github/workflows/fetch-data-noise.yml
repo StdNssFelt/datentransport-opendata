@@ -58,7 +58,7 @@ jobs:
           import json
 
           # Sensor-IDs in genau der Reihenfolge wie in der Abfrage (queries):
-          property_ids = [141867, 141834, 141829, 143482]
+          property_ids = [141866, 141831, 141826]
 
           with open("raw_data.json", "r") as f:
               raw_data = json.load(f)
