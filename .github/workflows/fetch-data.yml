@@ -19,7 +19,7 @@ jobs:
         env:
           AUTH_HEADER: ${{ secrets.AUTH_HEADER }}
         run: |
-FROM_DATE=$(date -u -d '1 day ago' +'%Y-%m-%dT%H:%M:%SZ')
+          FROM_DATE=$(date -u -d '1 day ago' +'%Y-%m-%dT%H:%M:%SZ')
           UNTIL_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 
           curl --request PUT \
