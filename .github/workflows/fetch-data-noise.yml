@@ -38,8 +38,8 @@ jobs:
               {
                 "source": { "property_id": 141826 },
                 "time": { "from": "$FROM_DATE", "until": "$UNTIL_DATE" }
-              },
-          ]
+              }
+            ]
           }
           EOF
 
