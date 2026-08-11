@@ -19,27 +19,34 @@ jobs:
         env:
           AUTH_HEADER: ${{ secrets.AUTH_HEADER }}
         run: |
+          # Berechnet dynamisch Start- und Endzeitpunkt (letzte 24 Stunden)
           FROM_DATE=$(date -u -d '1 day ago' +'%Y-%m-%dT%H:%M:%SZ')
           UNTIL_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 
+          # JSON-Body sauber in eine temporäre Datei schreiben (vermeidet Maskierungsfehler)
+          cat <<EOF > payload.json
+          {
+            "queries": [
+              {
+                "source": {
+                  "property_id": 141866
+                },
+                "time": {
+                  "from": "$FROM_DATE",
+                  "until": "$UNTIL_DATE"
+                }
+              }
+            ]
+          }
+          EOF
+
+          # Request an die DataCore API senden
           curl --request PUT \
             --url https://data-core.udp.senseering.io/api/elements/6/data/query \
             --header 'Accept: application/json' \
             --header "Authorization: $AUTH_HEADER" \
             --header 'Content-Type: application/json' \
-            --data "{
-              \"queries\": [
-                {
-                  \"source\": {
-                    \"property_id\": 141866
-                  },
-                  \"time\": {
-                    \"from\": \"$FROM_DATE\",
-                    \"until\": \"$UNTIL_DATE\"
-                  }
-                }
-              ]
-            }" \
+            --data @payload.json \
             --output live_data.json
 
       - name: Datei im Repository aktualisieren
