@@ -1,0 +1,65 @@
+name: Fetch Senseering Data
+
+on:
+  schedule:
+    # Läuft alle 15 Minuten vollautomatisch
+    - cron: '*/15 * * * *'
+  workflow_dispatch: # Erlaubt manuelles Starten per Klick
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v4
+
+      - name: Lärmdaten von Senseering abfragen
+        env:
+          AUTH_HEADER: ${{ secrets.AUTH_HEADER }}
+        run: |
+          # Berechnet dynamisch Start- und Endzeitpunkt (letzte 24 Stunden)
+          FROM_DATE=$(date -u -d '1 day ago' +'%Y-%m-%dT%H:%M:%SZ')
+          UNTIL_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+
+          # Payload mit den Lärm-PropertyIDs erstellen
+          cat <<EOF > payload.json
+          {
+            "queries": [
+              {
+                "source": { "property_id": 141867 },
+                "time": { "from": "$FROM_DATE", "until": "$UNTIL_DATE" }
+              },
+              {
+                "source": { "property_id": 141834 },
+                "time": { "from": "$FROM_DATE", "until": "$UNTIL_DATE" }
+              },
+              {
+                "source": { "property_id": 141829 },
+                "time": { "from": "$FROM_DATE", "until": "$UNTIL_DATE" }
+              },
+              {
+                "source": { "property_id": 143482 },
+                "time": { "from": "$FROM_DATE", "until": "$UNTIL_DATE" }
+              }
+            ]
+          }
+          EOF
+
+          # Abfrage per PUT
+          curl --request PUT \
+            --url https://data-core.udp.senseering.io/api/elements/6/data/query \
+            --header 'Accept: application/json' \
+            --header "Authorization: $AUTH_HEADER" \
+            --header 'Content-Type: application/json' \
+            --data @payload.json \
+            --output live_data.json
+
+      - name: Datei im Repository aktualisieren
+        run: |
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git add live_data.json
+          git commit -m "Auto-Update Lärmdaten" || exit 0
+          git push
