@@ -47,14 +47,46 @@ jobs:
           }
           EOF
 
-          # Abfrage per PUT
+          # Abfrage per PUT und Speichern in temporäre Rohdatei
           curl --request PUT \
             --url https://data-core.udp.senseering.io/api/elements/6/data/query \
             --header 'Accept: application/json' \
             --header "Authorization: $AUTH_HEADER" \
             --header 'Content-Type: application/json' \
             --data @payload.json \
-            --output live_data.json
+            --output raw_data.json
+
+      - name: Daten für Opendatasoft flachklopfen
+        run: |
+          python3 -c '
+          import json
+
+          # Sensor-IDs in genau der Reihenfolge wie in der Abfrage (queries):
+          property_ids = [141867, 141834, 141829, 143482]
+
+          with open("raw_data.json", "r") as f:
+              raw_data = json.load(f)
+
+          flat_data = []
+
+          for idx, item in enumerate(raw_data):
+              # Verwende die dazugehörige PropertyID aus der Liste
+              prop_id = property_ids[idx] if idx < len(property_ids) else "Unbekannt"
+              
+              data_content = item.get("data", {})
+              times = data_content.get("time", [])
+              values = data_content.get("value", [])
+
+              for t, v in zip(times, values):
+                  flat_data.append({
+                      "property_id": prop_id,
+                      "timestamp": t,
+                      "noise_level_db": v
+                  })
+
+          with open("live_data.json", "w") as f:
+              json.dump(flat_data, f, indent=2)
+          '
 
       - name: Datei im Repository aktualisieren
         run: |
