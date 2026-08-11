@@ -1,10 +1,7 @@
 name: Fetch Senseering Data
 
 on:
-  schedule:
-    # Läuft alle 15 Minuten
-    - cron: '*/15 * * * *'
-  workflow_dispatch: # Erlaubt manuelles Starten per Klick
+  workflow_dispatch: # Startet manuell per Klick
 
 jobs:
   fetch:
@@ -15,38 +12,15 @@ jobs:
       - name: Repository auschecken
         uses: actions/checkout@v4
 
-      - name: Daten von Senseering abfragen
+      - name: Alle PropertyIDs auslesen
         env:
           AUTH_HEADER: ${{ secrets.AUTH_HEADER }}
         run: |
-          # Berechnet dynamisch Start- und Endzeitpunkt (letzte 24 Stunden)
-          FROM_DATE=$(date -u -d '1 day ago' +'%Y-%m-%dT%H:%M:%SZ')
-          UNTIL_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
-
-          # JSON-Body sauber in eine temporäre Datei schreiben (vermeidet Maskierungsfehler)
-          cat <<EOF > payload.json
-          {
-            "queries": [
-              {
-                "source": {
-                  "property_id": 141866
-                },
-                "time": {
-                  "from": "$FROM_DATE",
-                  "until": "$UNTIL_DATE"
-                }
-              }
-            ]
-          }
-          EOF
-
-          # Request an die DataCore API senden
-          curl --request PUT \
-            --url https://data-core.udp.senseering.io/api/elements/6/data/query \
+          curl --request GET \
+            --url https://data-core.udp.senseering.io/api/elements/6 \
             --header 'Accept: application/json' \
             --header "Authorization: $AUTH_HEADER" \
             --header 'Content-Type: application/json' \
-            --data @payload.json \
             --output live_data.json
 
       - name: Datei im Repository aktualisieren
@@ -54,5 +28,5 @@ jobs:
           git config user.name "GitHub Action"
           git config user.email "action@github.com"
           git add live_data.json
-          git commit -m "Auto-Update Temperaturdaten" || exit 0
+          git commit -m "Fetch Element 6 Properties" || exit 0
           git push
