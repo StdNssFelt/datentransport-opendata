@@ -56,17 +56,29 @@ jobs:
         run: |
           python3 -c '
           import json
+          import sys
 
-          # Sensor-IDs in genau der Reihenfolge wie in der Abfrage (queries):
           property_ids = [141866, 141831, 141826]
 
-          with open("raw_data.json", "r") as f:
-              raw_data = json.load(f)
+          try:
+              with open("raw_data.json", "r") as f:
+                  raw_data = json.load(f)
+          except Exception as e:
+              print(f"Fehler beim Lesen der JSON-Datei: {e}")
+              sys.exit(1)
+
+          # Prüfen, ob die API ein Array geliefert hat
+          if not isinstance(raw_data, list):
+              print(f"API-Fehler! Die Antwort ist kein JSON-Array, sondern: {raw_data}")
+              sys.exit(1)
 
           flat_data = []
 
           for idx, item in enumerate(raw_data):
-              # Verwende die dazugehörige PropertyID aus der Liste
+              if not isinstance(item, dict):
+                  print(f"Eintrag {idx} ist kein JSON-Objekt: {item}")
+                  continue
+
               prop_id = property_ids[idx] if idx < len(property_ids) else "Unbekannt"
               
               data_content = item.get("data", {})
