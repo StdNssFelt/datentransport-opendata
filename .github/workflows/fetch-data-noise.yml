@@ -1,4 +1,4 @@
-name: Fetch Senseering Data
+name: Fetch Senseering Data (14-Tage 15-Min-Intervall)
 
 on:
   schedule:
@@ -20,30 +20,24 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Lärmdaten von Senseering abfragen
+      - name: Lärmdaten von Senseering abfragen (14 Tage, 15 Min)
         env:
           AUTH_HEADER: ${{ secrets.AUTH_HEADER }}
         run: |
-          # Berechnet dynamisch Start- und Endzeitpunkt (letzte 24 Stunden)
-          FROM_DATE=$(date -u -d '1 day ago' +'%Y-%m-%dT%H:%M:%SZ')
+          # Berechnet dynamisch Start- und Endzeitpunkt (letzte 14 Tage)
+          FROM_DATE=$(date -u -d '14 days ago' +'%Y-%m-%dT%H:%M:%SZ')
           UNTIL_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 
-          # Payload mit den PropertyIDs erstellen
+          # Payload mit den PropertyIDs und 15-Minuten-Resolution
           cat <<EOF > payload.json
           {
             "queries": [
-              {
-                "source": { "property_id": 141826 },
-                "time": { "from": "$FROM_DATE", "until": "$UNTIL_DATE" }
-              },
-              {
-                "source": { "property_id": 141831 },
-                "time": { "from": "$FROM_DATE", "until": "$UNTIL_DATE" }
-              },
-              {
-                "source": { "property_id": 141866 },
-                "time": { "from": "$FROM_DATE", "until": "$UNTIL_DATE" }
-              }
+              { "source": { "property_id": 141829 }, "time": { "from": "$FROM_DATE", "until": "$UNTIL_DATE" }, "resolution": { "value": 15, "unit": "MINUTES" } },
+              { "source": { "property_id": 141830 }, "time": { "from": "$FROM_DATE", "until": "$UNTIL_DATE" }, "resolution": { "value": 15, "unit": "MINUTES" } },
+              { "source": { "property_id": 141834 }, "time": { "from": "$FROM_DATE", "until": "$UNTIL_DATE" }, "resolution": { "value": 15, "unit": "MINUTES" } },
+              { "source": { "property_id": 141835 }, "time": { "from": "$FROM_DATE", "until": "$UNTIL_DATE" }, "resolution": { "value": 15, "unit": "MINUTES" } },
+              { "source": { "property_id": 141867 }, "time": { "from": "$FROM_DATE", "until": "$UNTIL_DATE" }, "resolution": { "value": 15, "unit": "MINUTES" } },
+              { "source": { "property_id": 141870 }, "time": { "from": "$FROM_DATE", "until": "$UNTIL_DATE" }, "resolution": { "value": 15, "unit": "MINUTES" } }
             ]
           }
           EOF
@@ -57,56 +51,38 @@ jobs:
             --data @payload.json \
             --output raw_data.json
 
-      - name: Daten robust in flaches JSON für OpenDataSoft umwandeln
+      - name: Daten in flaches JSON für OpenDataSoft umwandeln
         run: |
           python -c '
           import json
 
-          property_ids = [141826, 141831, 141866]
+          # Exakt dieselbe Reihenfolge wie in der payload.json oben
+          property_ids = [141829, 141830, 141834, 141835, 141867, 141870]
 
           with open("raw_data.json", "r") as f:
               raw_data = json.load(f)
 
           flat_data = []
 
-          # Falls raw_data ein Dictionary ist, die innere Liste extrahieren
-          if isinstance(raw_data, dict):
-              items_list = []
-              for val in raw_data.values():
-                  if isinstance(val, list):
-                      items_list = val
-                      break
-              raw_data = items_list if items_list else [raw_data]
-
-          if not isinstance(raw_data, list):
-              raw_data = [raw_data]
-
-          for idx, item in enumerate(raw_data):
-              if isinstance(item, str):
-                  try:
-                      item = json.loads(item)
-                  except:
+          if isinstance(raw_data, list):
+              for idx, item in enumerate(raw_data):
+                  if not isinstance(item, dict):
                       continue
-              
-              if not isinstance(item, dict):
-                  continue
 
-              prop_id = property_ids[idx] if idx < len(property_ids) else None
-              
-              data_obj = item.get("data", {})
-              if not isinstance(data_obj, dict):
-                  continue
+                  prop_id = property_ids[idx] if idx < len(property_ids) else None
                   
-              times = data_obj.get("time", [])
-              values = data_obj.get("value", [])
+                  data_obj = item.get("data", {})
+                  if isinstance(data_obj, dict):
+                      times = data_obj.get("time", [])
+                      values = data_obj.get("value", [])
 
-              if isinstance(times, list) and isinstance(values, list):
-                  for t, v in zip(times, values):
-                      flat_data.append({
-                          "timestamp": t,
-                          "property_id": prop_id,
-                          "value": v
-                      })
+                      if isinstance(times, list) and isinstance(values, list):
+                          for t, v in zip(times, values):
+                              flat_data.append({
+                                  "timestamp": t,
+                                  "property_id": prop_id,
+                                  "value": v
+                              })
 
           with open("live_data.json", "w") as f:
               json.dump(flat_data, f, indent=2)
@@ -117,5 +93,5 @@ jobs:
           git config user.name "GitHub Action"
           git config user.email "action@github.com"
           git add live_data.json
-          git commit -m "Auto-Update Lärmdaten (robuster Parser)" || exit 0
+          git commit -m "Auto-Update Lärmdaten (14 Tage, 15-Min-Werte)" || exit 0
           git push
