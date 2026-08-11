@@ -1,4 +1,4 @@
-name: Fetch Senseering Data (14-Tage 15-Min-Intervall)
+name: Fetch Senseering Data (Nur LAeq, 14 Tage, 15-Min-Intervalle)
 
 on:
   schedule:
@@ -20,7 +20,7 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Lärmdaten von Senseering abfragen (14 Tage, 15 Min)
+      - name: Lautstärkeäquivalente (LAeq) von Senseering abfragen
         env:
           AUTH_HEADER: ${{ secrets.AUTH_HEADER }}
         run: |
@@ -28,21 +28,18 @@ jobs:
           FROM_DATE=$(date -u -d '14 days ago' +'%Y-%m-%dT%H:%M:%SZ')
           UNTIL_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 
-          # Payload mit den PropertyIDs und 15-Minuten-Resolution
+          # Payload ausschließlich mit den LAeq-PropertyIDs und 15-Minuten-Resolution
           cat <<EOF > payload.json
           {
             "queries": [
-              { "source": { "property_id": 141829 }, "time": { "from": "$FROM_DATE", "until": "$UNTIL_DATE" }, "resolution": { "value": 15, "unit": "MINUTES" } },
               { "source": { "property_id": 141830 }, "time": { "from": "$FROM_DATE", "until": "$UNTIL_DATE" }, "resolution": { "value": 15, "unit": "MINUTES" } },
-              { "source": { "property_id": 141834 }, "time": { "from": "$FROM_DATE", "until": "$UNTIL_DATE" }, "resolution": { "value": 15, "unit": "MINUTES" } },
               { "source": { "property_id": 141835 }, "time": { "from": "$FROM_DATE", "until": "$UNTIL_DATE" }, "resolution": { "value": 15, "unit": "MINUTES" } },
-              { "source": { "property_id": 141867 }, "time": { "from": "$FROM_DATE", "until": "$UNTIL_DATE" }, "resolution": { "value": 15, "unit": "MINUTES" } },
               { "source": { "property_id": 141870 }, "time": { "from": "$FROM_DATE", "until": "$UNTIL_DATE" }, "resolution": { "value": 15, "unit": "MINUTES" } }
             ]
           }
           EOF
 
-          # Abfrage per PUT
+          # Abfrage per PUT an Senseering
           curl --request PUT \
             --url https://data-core.udp.senseering.io/api/elements/6/data/query \
             --header 'Accept: application/json' \
@@ -56,8 +53,8 @@ jobs:
           python -c '
           import json
 
-          # Exakt dieselbe Reihenfolge wie in der payload.json oben
-          property_ids = [141829, 141830, 141834, 141835, 141867, 141870]
+          # Zuordnung der LAeq-Property-IDs (WS302-003, WS302-002, WS302-001)
+          property_ids = [141830, 141835, 141870]
 
           with open("raw_data.json", "r") as f:
               raw_data = json.load(f)
@@ -93,5 +90,5 @@ jobs:
           git config user.name "GitHub Action"
           git config user.email "action@github.com"
           git add live_data.json
-          git commit -m "Auto-Update Lärmdaten (14 Tage, 15-Min-Werte)" || exit 0
+          git commit -m "Auto-Update Lärmdaten (nur LAeq, 14 Tage, 15-Min-Intervalle)" || exit 0
           git push
