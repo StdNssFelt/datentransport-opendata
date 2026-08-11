@@ -1,0 +1,42 @@
+name: Fetch Senseering Data
+
+on:
+  schedule:
+    # Läuft alle 15 Minuten
+    - cron: '*/15 * * * *'
+  workflow_dispatch: # Erlaubt manuelles Starten per Klick
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v4
+
+      - name: Daten von Senseering abfragen
+        env:
+          AUTH_HEADER: ${{ secrets.AUTH_HEADER }}
+        run: |
+          curl --request PUT \
+            --url https://data-core.udp.senseering.io/api/elements/6/data/query \
+            --header 'Accept: application/json' \
+            --header "Authorization: $AUTH_HEADER" \
+            --header 'Content-Type: application/json' \
+            --data '{
+              "queries": [
+                {
+                  "source": { "property_id": "141866" }
+                }
+              ]
+            }' \
+            --output live_data.json
+
+      - name: Datei im Repository aktualisieren
+        run: |
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git add live_data.json
+          git commit -m "Auto-Update Temperaturdaten" || exit 0
+          git push
