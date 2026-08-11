@@ -1,10 +1,29 @@
-- name: Lärmdaten von Senseering abfragen
+name: Fetch Senseering Data
+
+on:
+  schedule:
+    # Läuft alle 15 Minuten vollautomatisch
+    - cron: '*/15 * * * *'
+  workflow_dispatch: # Erlaubt manuelles Starten per Klick
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v4
+
+      - name: Lärmdaten von Senseering abfragen
         env:
           AUTH_HEADER: ${{ secrets.AUTH_HEADER }}
         run: |
+          # Berechnet dynamisch Start- und Endzeitpunkt (letzte 24 Stunden)
           FROM_DATE=$(date -u -d '1 day ago' +'%Y-%m-%dT%H:%M:%SZ')
           UNTIL_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 
+          # Payload mit den 3 Lärm-PropertyIDs erstellen
           cat <<EOF > payload.json
           {
             "queries": [
@@ -24,7 +43,7 @@
           }
 EOF
 
-          # -f/--fail sorgt dafür, dass curl bei HTTP-Fehlercodes (4xx, 5xx) abbricht
+          # Abfrage per PUT und Speichern in temporäre Rohdatei
           curl --request PUT \
             --url https://data-core.udp.senseering.io/api/elements/6/data/query \
             --header 'Accept: application/json' \
@@ -48,27 +67,23 @@ EOF
               print(f"Fehler beim Lesen der JSON-Datei: {e}")
               sys.exit(1)
 
-          # API-Fehlermeldungen im JSON explizit abfangen
-          if isinstance(raw_data, dict) and "message" in raw_data:
-              print(f"Senseering API Fehler: {raw_data['message']}")
-              print("Bitte überprüfen Sie, ob alle Property-IDs (141866, 141831, 141826) gültige Zeitreihen-Knoten sind.")
-              sys.exit(1)
-
+          # Prüfen, ob die API ein Array geliefert hat
           if not isinstance(raw_data, list):
-              print(f"Unerwartetes Antwortformat: {raw_data}")
+              print(f"API-Fehler! Die Antwort ist kein JSON-Array, sondern: {raw_data}")
               sys.exit(1)
 
           flat_data = []
 
           for idx, item in enumerate(raw_data):
               if not isinstance(item, dict):
+                  print(f"Eintrag {idx} ist kein JSON-Objekt: {item}")
                   continue
 
               prop_id = property_ids[idx] if idx < len(property_ids) else "Unbekannt"
               
               data_content = item.get("data", {})
-              times = data_content.get("time", []) or []
-              values = data_content.get("value", []) or []
+              times = data_content.get("time", [])
+              values = data_content.get("value", [])
 
               for t, v in zip(times, values):
                   flat_data.append({
@@ -80,3 +95,11 @@ EOF
           with open("live_data.json", "w") as f:
               json.dump(flat_data, f, indent=2)
           '
+
+      - name: Datei im Repository aktualisieren
+        run: |
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git add live_data.json
+          git commit -m "Auto-Update Lärmdaten" || exit 0
+          git push
