@@ -28,24 +28,20 @@ jobs:
           FROM_DATE=$(date -u -d '1 day ago' +'%Y-%m-%dT%H:%M:%SZ')
           UNTIL_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 
-          # Payload mit den Lärm-PropertyIDs erstellen
+          # Payload mit den neuen Lärm-PropertyIDs erstellen
           cat <<EOF > payload.json
           {
             "queries": [
               {
-                "source": { "property_id": 141867 },
+                "source": { "property_id": 141826 },
                 "time": { "from": "$FROM_DATE", "until": "$UNTIL_DATE" }
               },
               {
-                "source": { "property_id": 141834 },
+                "source": { "property_id": 141831 },
                 "time": { "from": "$FROM_DATE", "until": "$UNTIL_DATE" }
               },
               {
-                "source": { "property_id": 141829 },
-                "time": { "from": "$FROM_DATE", "until": "$UNTIL_DATE" }
-              },
-              {
-                "source": { "property_id": 143482 },
+                "source": { "property_id": 141866 },
                 "time": { "from": "$FROM_DATE", "until": "$UNTIL_DATE" }
               }
             ]
@@ -66,8 +62,8 @@ jobs:
           python -c '
           import json
 
-          # Zuordnung der Queries/Indizes zu ihren Property-IDs
-          property_ids = [141867, 141834, 141829, 143482]
+          # Zuordnung der Queries/Indizes zu ihren neuen Property-IDs
+          property_ids = [141826, 141831, 141866]
 
           with open("raw_data.json", "r") as f:
               raw_data = json.load(f)
@@ -99,5 +95,5 @@ jobs:
           git config user.name "GitHub Action"
           git config user.email "action@github.com"
           git add live_data.json
-          git commit -m "Auto-Update Lärmdaten (flaches Format)" || exit 0
+          git commit -m "Auto-Update Lärmdaten (neue Property-IDs, flaches Format)" || exit 0
           git push
