@@ -3260,11 +3260,6 @@
     "value": 53.5
   },
   {
-    "timestamp": "2026-08-01T16:00:54.731Z",
-    "property_id": 141830,
-    "value": 53.2
-  },
-  {
     "timestamp": "2026-08-15T15:33:00.451Z",
     "property_id": 141835,
     "value": 68.9
@@ -6550,6 +6545,11 @@
     "value": 52.9
   },
   {
+    "timestamp": "2026-08-15T15:56:18.28Z",
+    "property_id": 141870,
+    "value": 57.5
+  },
+  {
     "timestamp": "2026-08-15T15:26:18.212Z",
     "property_id": 141870,
     "value": 66
@@ -9808,10 +9808,5 @@
     "timestamp": "2026-08-01T16:26:16.589Z",
     "property_id": 141870,
     "value": 56.5
-  },
-  {
-    "timestamp": "2026-08-01T15:56:12.668Z",
-    "property_id": 141870,
-    "value": 57.2
   }
 ]
