@@ -6540,6 +6540,11 @@
     "value": 57.2
   },
   {
+    "timestamp": "2026-08-15T11:56:16.579Z",
+    "property_id": 141870,
+    "value": 57.2
+  },
+  {
     "timestamp": "2026-08-15T11:26:15.438Z",
     "property_id": 141870,
     "value": 58.9
@@ -9801,11 +9806,6 @@
   },
   {
     "timestamp": "2026-08-01T12:26:03.675Z",
-    "property_id": 141870,
-    "value": 55.3
-  },
-  {
-    "timestamp": "2026-08-01T11:56:06.483Z",
     "property_id": 141870,
     "value": 55.3
   }
