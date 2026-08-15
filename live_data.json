@@ -1,5 +1,15 @@
 [
   {
+    "timestamp": "2026-08-15T21:31:07.147Z",
+    "property_id": 141830,
+    "value": 50.9
+  },
+  {
+    "timestamp": "2026-08-15T21:01:06.753Z",
+    "property_id": 141830,
+    "value": 51.8
+  },
+  {
     "timestamp": "2026-08-15T20:31:07.06Z",
     "property_id": 141830,
     "value": 51.6
@@ -3260,14 +3270,14 @@
     "value": 51.3
   },
   {
-    "timestamp": "2026-08-01T21:30:54.973Z",
-    "property_id": 141830,
-    "value": 52.3
+    "timestamp": "2026-08-15T21:33:03.04Z",
+    "property_id": 141835,
+    "value": 63.3
   },
   {
-    "timestamp": "2026-08-01T21:00:56.404Z",
-    "property_id": 141830,
-    "value": 51.8
+    "timestamp": "2026-08-15T21:02:59.078Z",
+    "property_id": 141835,
+    "value": 64.8
   },
   {
     "timestamp": "2026-08-15T20:33:03.192Z",
@@ -6545,14 +6555,14 @@
     "value": 42.9
   },
   {
-    "timestamp": "2026-08-01T21:32:49.184Z",
-    "property_id": 141835,
-    "value": 48.1
+    "timestamp": "2026-08-15T21:26:16.344Z",
+    "property_id": 141870,
+    "value": 69.6
   },
   {
-    "timestamp": "2026-08-01T21:02:48.005Z",
-    "property_id": 141835,
-    "value": 48.6
+    "timestamp": "2026-08-15T20:56:17.584Z",
+    "property_id": 141870,
+    "value": 70
   },
   {
     "timestamp": "2026-08-15T20:26:17.81Z",
@@ -9808,15 +9818,5 @@
     "timestamp": "2026-08-01T21:56:12.329Z",
     "property_id": 141870,
     "value": 54.4
-  },
-  {
-    "timestamp": "2026-08-01T21:26:16.134Z",
-    "property_id": 141870,
-    "value": 57.7
-  },
-  {
-    "timestamp": "2026-08-01T20:56:16.239Z",
-    "property_id": 141870,
-    "value": 51.4
   }
 ]
