@@ -3270,9 +3270,9 @@
     "value": 56.4
   },
   {
-    "timestamp": "2026-08-03T11:30:52.737Z",
-    "property_id": 141830,
-    "value": 57.5
+    "timestamp": "2026-08-17T11:32:57.63Z",
+    "property_id": 141835,
+    "value": 46.9
   },
   {
     "timestamp": "2026-08-17T11:02:58.216Z",
@@ -6570,9 +6570,14 @@
     "value": 51.6
   },
   {
-    "timestamp": "2026-08-03T11:32:58.966Z",
-    "property_id": 141835,
-    "value": 52.5
+    "timestamp": "2026-08-17T11:56:26.051Z",
+    "property_id": 141870,
+    "value": 56.8
+  },
+  {
+    "timestamp": "2026-08-17T11:26:24.598Z",
+    "property_id": 141870,
+    "value": 53.9
   },
   {
     "timestamp": "2026-08-17T10:56:23.082Z",
@@ -9818,15 +9823,5 @@
     "timestamp": "2026-08-03T12:26:14.552Z",
     "property_id": 141870,
     "value": 56.6
-  },
-  {
-    "timestamp": "2026-08-03T11:56:12.734Z",
-    "property_id": 141870,
-    "value": 56.8
-  },
-  {
-    "timestamp": "2026-08-03T11:26:12.24Z",
-    "property_id": 141870,
-    "value": 58.4
   }
 ]
