@@ -24,11 +24,9 @@ jobs:
         env:
           AUTH_HEADER: ${{ secrets.AUTH_HEADER }}
         run: |
-          # Berechnet dynamisch Start- und Endzeitpunkt (letzte 14 Tage)
           FROM_DATE=$(date -u -d '14 days ago' +'%Y-%m-%dT%H:%M:%SZ')
           UNTIL_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 
-          # Payload ausschließlich mit den LAeq-PropertyIDs und 15-Minuten-Resolution
           cat <<EOF > payload.json
           {
             "queries": [
@@ -39,8 +37,9 @@ jobs:
           }
           EOF
 
-          # Abfrage per PUT an Senseering
-          curl --request PUT \
+          # -f = bricht bei HTTP-Fehlern ab
+          # -sS = zeigt nur Fehler, falls sie auftreten
+          curl -f -sS --request PUT \
             --url https://data-core.udp.senseering.io/api/elements/6/data/query \
             --header 'Accept: application/json' \
             --header "Authorization: $AUTH_HEADER" \
@@ -51,13 +50,21 @@ jobs:
       - name: Daten in flaches JSON für OpenDataSoft umwandeln
         run: |
           python -c '
-          import json
+          import json, sys, os
 
-          # Zuordnung der LAeq-Property-IDs (WS302-003, WS302-002, WS302-001)
+          # Prüfung: Datei vorhanden und nicht leer?
+          if not os.path.exists("raw_data.json") or os.path.getsize("raw_data.json") == 0:
+              print("Fehler: raw_data.json ist leer oder existiert nicht!")
+              sys.exit(1)
+
           property_ids = [141830, 141835, 141870]
 
           with open("raw_data.json", "r") as f:
-              raw_data = json.load(f)
+              try:
+                  raw_data = json.load(f)
+              except json.JSONDecodeError as e:
+                  print(f"Fehler: raw_data.json enthält kein gültiges JSON: {e}")
+                  sys.exit(1)
 
           flat_data = []
 
